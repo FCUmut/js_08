@@ -1,7 +1,9 @@
 const itemForm = document.getElementById("item-form");
 const itemInput = document.getElementById("item-input");
 const itemList = document.getElementById("item-list");
+const clear = document.getElementById("clear");
 
+// |------- Creating List Items -------|
 // ↓ First ↓ - Create Add Item Function
 function addItem(e) {
   e.preventDefault();
@@ -49,6 +51,30 @@ function createIcon(classes) {
   return icon;
 }
 
+// |------- Deleting List Items -------|
+// remove item by clicking 'X' icon
+function removeItem(e) {
+  // another option
+  // if (e.target.parentElement.classList.contains('remove-item')) {
+  if (e.target.className === "fa-solid fa-xmark") {
+    e.target.parentElement.parentElement.remove();
+  }
+}
+
+// clearing all items by clicking "Clear All" button
+function clearItems(e) {
+  // Solution-1
+  // itemList.innerHTML = "";
+
+  // Solution-2
+  while (itemList.firstChild) {
+    itemList.removeChild(itemList.firstChild);
+  }
+}
+
 // Event Listeners
 // ↓ First ↓ - Call Add Item Function
 itemForm.addEventListener("submit", addItem);
+itemList.addEventListener("click", removeItem);
+itemList.addEventListener("click", removeItem);
+clear.addEventListener("click", clearItems);
