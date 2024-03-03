@@ -2,6 +2,8 @@ const itemForm = document.getElementById("item-form");
 const itemInput = document.getElementById("item-input");
 const itemList = document.getElementById("item-list");
 const clear = document.getElementById("clear");
+const itemFilter = document.getElementById("filter");
+// NOTE*: const items = itemList.querySelectorAll("li");
 
 // |------- Creating List Items -------|
 // ↓ First ↓ - Create Add Item Function
@@ -28,6 +30,8 @@ function addItem(e) {
 
   // ↓ Last ↓ - Item List Append List Element
   itemList.appendChild(li);
+
+  checkUI();
 
   // Clear Input
   itemInput.value = "";
@@ -57,7 +61,11 @@ function removeItem(e) {
   // another option
   // if (e.target.parentElement.classList.contains('remove-item')) {
   if (e.target.className === "fa-solid fa-xmark") {
-    e.target.parentElement.parentElement.remove();
+    if (confirm("Are you sure ?")) {
+      e.target.parentElement.parentElement.remove();
+
+      checkUI(); // NOTE*: Also you should call 'checkUI' again while removing items
+    }
   }
 }
 
@@ -68,7 +76,24 @@ function clearItems(e) {
 
   // Solution-2
   while (itemList.firstChild) {
-    itemList.removeChild(itemList.firstChild);
+    if (confirm("Are you sure ?")) {
+      itemList.removeChild(itemList.firstChild);
+    }
+    checkUI(); // NOTE*: Also you should call 'checkUI' here
+  }
+}
+
+// removing the displaying of clear button and filter box
+function checkUI() {
+  // NOTE*: if you set 'items' in global scope it will not change anymore so after we remove clear button and filter, we can not bring them back with else statement that's why every time we set 'items' when 'checkUI' is called
+  const items = itemList.querySelectorAll("li");
+
+  if (items.length === 0) {
+    clear.style.display = "none";
+    itemFilter.style.display = "none";
+  } else {
+    clear.style.display = "block";
+    itemFilter.style.display = "block";
   }
 }
 
@@ -78,3 +103,5 @@ itemForm.addEventListener("submit", addItem);
 itemList.addEventListener("click", removeItem);
 itemList.addEventListener("click", removeItem);
 clear.addEventListener("click", clearItems);
+
+checkUI();
