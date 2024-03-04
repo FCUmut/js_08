@@ -97,11 +97,44 @@ function checkUI() {
   }
 }
 
+// Solution-1 - Function
+// function filterItems(e) {
+//   itemList.childNodes.forEach((list) => {
+//     if (list.innerText.includes(e.target.value)) {
+//       list.style.display = "flex";
+//     } else {
+//       list.style.display = "none";
+//     }
+//   });
+// }
+
+// Solution-2 - Function
+function filterItems(e) {
+  const items = itemList.querySelectorAll("li");
+  const text = e.target.value.toLowerCase();
+
+  items.forEach((item) => {
+    const itemName = item.firstChild.textContent.toLocaleLowerCase();
+
+    if (itemName.indexOf(text) != -1) {
+      item.style.display = "flex";
+    } else {
+      item.style.display = "none";
+    }
+  });
+}
+
 // Event Listeners
 // ↓ First ↓ - Call Add Item Function
 itemForm.addEventListener("submit", addItem);
 itemList.addEventListener("click", removeItem);
 itemList.addEventListener("click", removeItem);
 clear.addEventListener("click", clearItems);
+
+// Solution-1
+// itemFilter.addEventListener("input", filterItems);
+
+// Solution-2
+itemFilter.addEventListener("input", filterItems);
 
 checkUI();
