@@ -5,9 +5,16 @@ const clear = document.getElementById("clear");
 const itemFilter = document.getElementById("filter");
 // NOTE*: const items = itemList.querySelectorAll("li");
 
+// while loading page it takes items from localStorage and displays
+function displayItems() {
+  const itemsFromStorage = getItemsFromStorage();
+  itemsFromStorage.forEach((item) => addItemToDOM(item));
+  checkUI();
+}
+
 // |------- Creating List Items -------|
 // ↓ First ↓ - Create Add Item Function
-function addItem(e) {
+function onAddItemSubmit(e) {
   e.preventDefault();
 
   const newItem = itemInput.value;
@@ -17,10 +24,25 @@ function addItem(e) {
     alert("Please add an item");
   }
 
+  // Create item DOM element
+  addItemToDOM(newItem);
+
+  // Add item to localStorage
+  addItemToStorage(newItem);
+
+  checkUI();
+
+  // Clear Input
+  itemInput.value = "";
+}
+
+// we separated the adding item into two functions because one of them will handle adding items to DOM and other will add items to local storage
+// Adding DOM part
+function addItemToDOM(item) {
   // Create List Item
   // ↓ Second ↓ - Create List Element
   const li = document.createElement("li");
-  li.appendChild(document.createTextNode(newItem));
+  li.appendChild(document.createTextNode(item));
 
   // ↓ Third ↓ - Call Button Function
   const button = createButton("remove-item btn-link text-red");
@@ -30,11 +52,6 @@ function addItem(e) {
 
   // ↓ Last ↓ - Item List Append List Element
   itemList.appendChild(li);
-
-  checkUI();
-
-  // Clear Input
-  itemInput.value = "";
 }
 
 // ↓ Third ↓ - Create Button Function
@@ -55,18 +72,69 @@ function createIcon(classes) {
   return icon;
 }
 
-// |------- Deleting List Items -------|
-// remove item by clicking 'X' icon
-function removeItem(e) {
-  // another option
-  // if (e.target.parentElement.classList.contains('remove-item')) {
-  if (e.target.className === "fa-solid fa-xmark") {
-    if (confirm("Are you sure ?")) {
-      e.target.parentElement.parentElement.remove();
+// Adding localStorage part
+function addItemToStorage(item) {
+  const itemsFromStorage = getItemsFromStorage();
 
-      checkUI(); // NOTE*: Also you should call 'checkUI' again while removing items
-    }
+  // Add new item to array
+  itemsFromStorage.push(item);
+
+  // Conver to JSON string and set to localStorage
+  localStorage.setItem("items", JSON.stringify(itemsFromStorage));
+}
+
+function getItemsFromStorage() {
+  let itemsFromStorage;
+
+  if (localStorage.getItem("items") === null) {
+    itemsFromStorage = [];
+  } else {
+    itemsFromStorage = JSON.parse(localStorage.getItem("items"));
   }
+
+  return itemsFromStorage;
+}
+
+// |------- Deleting List Items -------|
+function onClickItem(e) {
+  if (e.target.className === "fa-solid fa-xmark") {
+    removeItem(e.target.parentElement.parentElement);
+  }
+}
+
+// remove item by clicking 'X' icon
+function removeItem(item) {
+  // // - Old removeItem(e) -
+  // // if (e.target.parentElement.classList.contains('remove-item')) {
+  // // another option
+  // if (e.target.className === "fa-solid fa-xmark") {
+  //   if (confirm("Are you sure ?")) {
+  //     e.target.parentElement.parentElement.remove();
+
+  //     checkUI(); // NOTE*: Also you should call 'checkUI' again while removing items
+  //   }
+  // }
+  // // ---------------------
+
+  if (confirm("Are you sure ?")) {
+    // Remove item from DOM
+    item.remove();
+
+    // Remove item from localStorage
+    removeItemFromStorage(item.textContent);
+
+    checkUI();
+  }
+}
+
+function removeItemFromStorage(item) {
+  let itemsFromStorage = getItemsFromStorage();
+
+  // Filter out item to be rmoved
+  itemsFromStorage = itemsFromStorage.filter((e) => e !== item);
+
+  // Re-set to localStorage
+  localStorage.setItem("items", JSON.stringify(itemsFromStorage));
 }
 
 // clearing all items by clicking "Clear All" button
@@ -79,8 +147,12 @@ function clearItems(e) {
     if (confirm("Are you sure ?")) {
       itemList.removeChild(itemList.firstChild);
     }
-    checkUI(); // NOTE*: Also you should call 'checkUI' here
   }
+
+  // Clear from localStorage
+  localStorage.removeItem("items");
+
+  checkUI(); // NOTE*: Also you should call 'checkUI' here
 }
 
 // removing the displaying of clear button and filter box
@@ -97,7 +169,7 @@ function checkUI() {
   }
 }
 
-// Solution-1 - Function
+// Solution-1 - Filter Items Function
 // function filterItems(e) {
 //   itemList.childNodes.forEach((list) => {
 //     if (list.innerText.includes(e.target.value)) {
@@ -108,7 +180,7 @@ function checkUI() {
 //   });
 // }
 
-// Solution-2 - Function
+// Solution-2 - Filter Items Function
 function filterItems(e) {
   const items = itemList.querySelectorAll("li");
   const text = e.target.value.toLowerCase();
@@ -124,17 +196,22 @@ function filterItems(e) {
   });
 }
 
-// Event Listeners
-// ↓ First ↓ - Call Add Item Function
-itemForm.addEventListener("submit", addItem);
-itemList.addEventListener("click", removeItem);
-itemList.addEventListener("click", removeItem);
-clear.addEventListener("click", clearItems);
+// Initialize app
+function init() {
+  // Event Listeners
+  // ↓ First ↓ - Call Add Item Function
+  itemForm.addEventListener("submit", onAddItemSubmit);
+  itemList.addEventListener("click", onClickItem);
+  clear.addEventListener("click", clearItems);
 
-// Solution-1
-// itemFilter.addEventListener("input", filterItems);
+  // Solution-1 - Filter Items
+  // itemFilter.addEventListener("input", filterItems);
 
-// Solution-2
-itemFilter.addEventListener("input", filterItems);
+  // Solution-2 - Filter Items
+  itemFilter.addEventListener("input", filterItems);
 
-checkUI();
+  document.addEventListener("DOMContentLoaded", displayItems);
+  checkUI();
+}
+
+init();
