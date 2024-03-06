@@ -3,6 +3,9 @@ const itemInput = document.getElementById("item-input");
 const itemList = document.getElementById("item-list");
 const clear = document.getElementById("clear");
 const itemFilter = document.getElementById("filter");
+const formBtn = itemForm.querySelector("button");
+let isEditMode = false;
+
 // NOTE*: const items = itemList.querySelectorAll("li");
 
 // while loading page it takes items from localStorage and displays
@@ -22,6 +25,31 @@ function onAddItemSubmit(e) {
   // Validate Input
   if (newItem === "") {
     alert("Please add an item");
+    return;
+  }
+
+  // Check for 'Edit Mode'
+  console.log(isEditMode);
+  if (isEditMode) {
+    if (checkIfItemExists(newItem)) {
+      alert("That item already exists!");
+      //checkUI();
+      return;
+    } else {
+      const itemToEdit = itemList.querySelector(".edit-mode");
+
+      removeItemFromStorage(itemToEdit.textContent);
+      //itemToEdit.classList.remove("edit-mode");
+      itemToEdit.remove();
+
+      turnbackState();
+    }
+  } else {
+    if (checkIfItemExists(newItem)) {
+      alert("That item already exists!");
+      checkUI();
+      return;
+    }
   }
 
   // Create item DOM element
@@ -31,9 +59,6 @@ function onAddItemSubmit(e) {
   addItemToStorage(newItem);
 
   checkUI();
-
-  // Clear Input
-  itemInput.value = "";
 }
 
 // we separated the adding item into two functions because one of them will handle adding items to DOM and other will add items to local storage
@@ -99,7 +124,36 @@ function getItemsFromStorage() {
 function onClickItem(e) {
   if (e.target.className === "fa-solid fa-xmark") {
     removeItem(e.target.parentElement.parentElement);
+  } else {
+    // |------- Editing List Items -------|
+    setItemToEdit(e.target);
   }
+}
+
+function setItemToEdit(item) {
+  isEditMode = true;
+
+  itemList
+    .querySelectorAll("li")
+    .forEach((e) => e.classList.remove("edit-mode"));
+
+  item.classList.add("edit-mode");
+  formBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Update Item';
+  formBtn.classList.add("btn-green");
+  itemInput.value = item.textContent;
+}
+
+function checkIfItemExists(item) {
+  const itemsFromStorage = getItemsFromStorage();
+  return itemsFromStorage.includes(item);
+}
+
+function turnbackState() {
+  itemList
+    .querySelectorAll("li")
+    .forEach((e) => e.classList.remove("edit-mode"));
+  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+  formBtn.classList.remove("btn-green");
 }
 
 // remove item by clicking 'X' icon
@@ -123,6 +177,8 @@ function removeItem(item) {
     // Remove item from localStorage
     removeItemFromStorage(item.textContent);
 
+    turnbackState();
+
     checkUI();
   }
 }
@@ -138,13 +194,13 @@ function removeItemFromStorage(item) {
 }
 
 // clearing all items by clicking "Clear All" button
-function clearItems(e) {
+function clearItems() {
   // Solution-1
   // itemList.innerHTML = "";
 
   // Solution-2
-  while (itemList.firstChild) {
-    if (confirm("Are you sure ?")) {
+  if (confirm("Are you sure ?")) {
+    while (itemList.firstChild) {
       itemList.removeChild(itemList.firstChild);
     }
   }
@@ -152,11 +208,16 @@ function clearItems(e) {
   // Clear from localStorage
   localStorage.removeItem("items");
 
+  turnbackState();
+
   checkUI(); // NOTE*: Also you should call 'checkUI' here
 }
 
 // removing the displaying of clear button and filter box
 function checkUI() {
+  // Clear Input
+  itemInput.value = "";
+
   // NOTE*: if you set 'items' in global scope it will not change anymore so after we remove clear button and filter, we can not bring them back with else statement that's why every time we set 'items' when 'checkUI' is called
   const items = itemList.querySelectorAll("li");
 
@@ -167,6 +228,8 @@ function checkUI() {
     clear.style.display = "block";
     itemFilter.style.display = "block";
   }
+
+  isEditMode = false;
 }
 
 // Solution-1 - Filter Items Function
