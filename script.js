@@ -33,7 +33,8 @@ function onAddItemSubmit(e) {
   if (isEditMode) {
     if (checkIfItemExists(newItem)) {
       alert("That item already exists!");
-      //checkUI();
+      turnbackState();
+      checkUI();
       return;
     } else {
       const itemToEdit = itemList.querySelector(".edit-mode");
@@ -47,6 +48,7 @@ function onAddItemSubmit(e) {
   } else {
     if (checkIfItemExists(newItem)) {
       alert("That item already exists!");
+      turnbackState();
       checkUI();
       return;
     }
